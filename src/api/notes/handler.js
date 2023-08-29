@@ -12,6 +12,7 @@ class NotesHandler {
     this.deleteNoteByIdHandler = this.deleteNoteByIdHandler.bind(this);
   }
 
+  /* eslint no-console: ["error", { allow: ["warn", "error"] }] */
   postNoteHandler(request, h) {
     try {
       this._validator.validateNotePayload(request.payload);
