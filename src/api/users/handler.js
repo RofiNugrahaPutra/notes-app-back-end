@@ -67,26 +67,30 @@ class UsersHandler {
 
   async getUsersByUsernameHandler(request, h) {
     try {
-      const { username } = request.query;
+      const { username = '' } = request.query;
       const users = await this._service.getUsersByUsername(username);
-
       return {
         status: 'success',
-        data: { users },
+        data: {
+          users,
+        },
       };
     } catch (error) {
       if (error instanceof ClientError) {
-        return h.response({
+        const response = h.response({
           status: 'fail',
           message: error.message,
-        }).code(error.statusCode);
+        });
+        response.code(error.statusCode);
+        return response;
       }
 
       // Server ERROR!
       const response = h.response({
         status: 'error',
         message: 'Maaf, terjadi kegagalan pada server kami.',
-      }).code(500);
+      });
+      response.code(500);
       console.error(error);
       return response;
     }
