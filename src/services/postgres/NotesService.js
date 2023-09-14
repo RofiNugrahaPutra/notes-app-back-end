@@ -7,8 +7,9 @@ const { mapDBToModel } = require('../../utils');
 
 /* eslint no-underscore-dangle: 0 */
 class NotesService {
-  constructor() {
+  constructor(collaborationService) {
     this._pool = new Pool();
+    this._collaborationService = collaborationService;
   }
 
   async addNote({
@@ -33,10 +34,14 @@ class NotesService {
   }
 
   async getNotes(owner) {
-    const result = await this._pool.query({
-      text: 'SELECT * FROM notes WHERE owner = $1',
+    const query = {
+      text: `SELECT notes.* FROM notes
+      LEFT JOIN collaborations ON collaborations.note_id = notes.id
+      WHERE notes.owner = $1 OR collaborations.user_id = $1
+      GROUP BY notes.id`,
       values: [owner],
-    });
+    };
+    const result = await this._pool.query(query);
     return result.rows.map(mapDBToModel);
   }
 
@@ -59,9 +64,37 @@ class NotesService {
     }
   }
 
+  async verifyNoteAccess(noteId, userId) {
+    try {
+      await this.verifyNoteOwner(noteId, userId);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+
+      try {
+        await this._collaborationService.verifyCollaborator(noteId, userId);
+      } catch {
+        throw error;
+      }
+    }
+    /*
+      Fungsi verifyNoteAccess bertujuan untuk memverifikasi hak akses pengguna (userId)
+      terhadap catatan (id), baik sebagai owner maupun collaboration. Untuk lolos tahap verifikasi,
+      pengguna haruslah seorang owner atau kolaborator dari catatan.
+
+      Dalam proses verifikasi, fungsi ini tidak melakukan kueri secara langsung ke database.
+      Melainkan ia memanfaatkan fungsi yang sudah dibuat sebelumnya, yakni verifyNoteOwner
+      dan verifyCollaborator.
+    */
+  }
+
   async getNoteById(id) {
     const query = {
-      text: 'SELECT * FROM notes WHERE id = $1',
+      text: `SELECT notes.*, users.username
+      FROM notes
+      LEFT JOIN users ON users.id = notes.owner
+      WHERE notes.id = $1`,
       values: [id],
     };
 

@@ -59,7 +59,7 @@ class NotesHandler {
       const { id } = request.params;
       const { id: credentialId } = request.auth.credentials;
 
-      await this._service.verifyNoteOwner(id, credentialId);
+      await this._service.verifyNoteAccess(id, credentialId);
       const note = await this._service.getNoteById(id);
       return {
         status: 'success',
@@ -67,17 +67,20 @@ class NotesHandler {
       };
     } catch (error) {
       if (error instanceof ClientError) {
-        return h.response({
+        const response = h.response({
           status: 'fail',
           message: error.message,
-        }).code(error.statusCode);
+        });
+        response.code(error.statusCode);
+        return response;
       }
 
       // Server ERROR!
       const response = h.response({
         status: 'error',
         message: 'Maaf, terjadi kegagalan pada server kami.',
-      }).code(500);
+      });
+      response.code(500);
       console.error(error);
       return response;
     }
@@ -89,7 +92,7 @@ class NotesHandler {
       const { id } = request.params;
       const { id: credentialId } = request.auth.credentials;
 
-      await this._service.verifyNoteOwner(id, credentialId);
+      await this._service.verifyNoteAccess(id, credentialId);
       await this._service.editNoteById(id, request.payload);
 
       return {
