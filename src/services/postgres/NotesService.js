@@ -103,7 +103,7 @@ class NotesService {
     }
 
     const note = result.rows[0];
-
+    console.log(note.owner, owner);
     if (note.owner !== owner) {
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
     }
