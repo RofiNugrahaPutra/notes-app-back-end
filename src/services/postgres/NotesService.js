@@ -41,6 +41,7 @@ class NotesService {
       GROUP BY notes.id`,
       values: [owner],
     };
+
     const result = await this._pool.query(query);
     return result.rows.map(mapDBToModel);
   }
@@ -103,7 +104,6 @@ class NotesService {
     }
 
     const note = result.rows[0];
-    console.log(note.owner, owner);
     if (note.owner !== owner) {
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
     }
