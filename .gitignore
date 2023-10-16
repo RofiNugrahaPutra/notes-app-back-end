@@ -3,3 +3,4 @@ notes-api-webserver.pem
 .env
 .prod.env
 src/api/uploads/file
+rofinugraha_accessKeys.csv

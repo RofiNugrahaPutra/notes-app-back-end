@@ -12,14 +12,20 @@ class UploadsHandler {
   async postUploadImageHandler(request, h) {
     try {
       const { data } = request.payload;
-      this._validator.validateImageHeader(data.hapi.headers);
+      this._validator.validateImageHeaders(data.hapi.headers);
 
-      const filename = await this._service.writeFile(data, data.hapi);
+      // Implementasi Local Storage
+      // const filename = await this._service.writeFile(data, data.hapi);
+
+      const fileLocation = await this._service.writeFile(data, data.hapi);
 
       return h.response({
         status: 'success',
         data: {
-          fileLocation: `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`,
+          // Implementasi Local Storage
+          // fileLocation: `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`,
+
+          fileLocation,
         },
       }).code(201);
     } catch (error) {
